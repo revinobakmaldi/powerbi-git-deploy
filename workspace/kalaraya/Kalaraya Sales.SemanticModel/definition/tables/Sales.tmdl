@@ -2,7 +2,7 @@ table Sales
 
 	/// Sales after discounts, in rupiah.
 	measure 'Net Sales' = SUM ( Sales[net_amount] )
-		formatString: #,0
+		formatSting #,0
 		displayFolder: Sales
 
 	/// Sales before discounts, in rupiah.
