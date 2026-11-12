@@ -4,7 +4,7 @@ relationship sales_date_date
 
 relationship sales_store_id_store
 	fromColumn: Sales.store_id
-	toColumn: Store.store_id
+	toColumn: Store.shop_id
 
 relationship sales_product_id_product
 	fromColumn: Sales.product_id
