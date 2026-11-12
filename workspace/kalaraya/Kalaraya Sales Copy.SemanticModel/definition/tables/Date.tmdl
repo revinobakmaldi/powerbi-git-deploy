@@ -1,0 +1,75 @@
+table 'Date'
+	dataCategory: Time
+
+	column date
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		isKey
+		summarizeBy: none
+		sourceColumn: date
+
+	column year
+		dataType: int64
+		summarizeBy: none
+		sourceColumn: year
+
+	column month
+		dataType: int64
+		summarizeBy: none
+		sourceColumn: month
+
+	column iso_year
+		dataType: int64
+		summarizeBy: none
+		sourceColumn: iso_year
+
+	column iso_week
+		dataType: int64
+		summarizeBy: none
+		sourceColumn: iso_week
+
+	column week_start
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		summarizeBy: none
+		sourceColumn: week_start
+
+	column day_name
+		dataType: string
+		summarizeBy: none
+		sourceColumn: day_name
+
+	column holiday
+		dataType: string
+		summarizeBy: none
+		sourceColumn: holiday
+
+	column is_ramadan
+		dataType: boolean
+		summarizeBy: none
+		sourceColumn: is_ramadan
+
+	column is_lebaran_holiday
+		dataType: boolean
+		summarizeBy: none
+		sourceColumn: is_lebaran_holiday
+
+	column is_rainy_season
+		dataType: boolean
+		summarizeBy: none
+		sourceColumn: is_rainy_season
+
+	column year_week
+		dataType: string
+		summarizeBy: none
+		sourceColumn: year_week
+
+	partition Date = m
+		mode: import
+		source =
+				let
+					Source = Parquet.Document(Binary.Buffer(Web.Contents(DataUrl & "dim_date.parquet"))),
+					Selected = Table.SelectColumns(Source, {"date","year","month","iso_year","iso_week","week_start","day_name","holiday","is_ramadan","is_lebaran_holiday","is_rainy_season","year_week"}),
+					Typed = Table.TransformColumnTypes(Selected, {{"date", type date}, {"week_start", type date}})
+				in
+					Typed

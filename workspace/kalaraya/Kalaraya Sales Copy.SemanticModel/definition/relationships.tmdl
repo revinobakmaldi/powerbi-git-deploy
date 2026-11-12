@@ -1,0 +1,28 @@
+relationship sales_date_date
+	fromColumn: Sales.date
+	toColumn: 'Date'.date
+
+relationship sales_store_id_store
+	fromColumn: Sales.store_id
+	toColumn: Store.store_id
+
+relationship sales_product_id_product
+	fromColumn: Sales.product_id
+	toColumn: Product.product_id
+
+relationship sales_channel_channel
+	fromColumn: Sales.channel
+	toColumn: Channel.channel
+
+relationship orders_date_date
+	fromColumn: Orders.date
+	toColumn: 'Date'.date
+
+relationship orders_store_id_store
+	fromColumn: Orders.store_id
+	toColumn: Store.store_id
+
+relationship orders_channel_channel
+	fromColumn: Orders.channel
+	toColumn: Channel.channel
+

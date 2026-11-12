@@ -1,0 +1,86 @@
+table Orders
+
+	/// Number of orders (receipts).
+	measure 'Orders' = SUM ( Orders[order_count] )
+		formatString: #,0
+		displayFolder: Orders
+
+	/// Net Sales per order, in rupiah.
+	measure 'Avg Ticket' = DIVIDE ( [Net Sales], [Orders] )
+		formatString: #,0
+		displayFolder: Orders
+
+	/// Orders in the week before.
+	measure 'Orders LW' = 
+			VAR wk = MAX ( 'Date'[week_start] )
+			RETURN
+				CALCULATE ( [Orders], REMOVEFILTERS ( 'Date' ), 'Date'[week_start] = wk - 7 )
+		formatString: #,0
+		displayFolder: Week comparisons
+
+	/// Orders in the same ISO week last year.
+	measure 'Orders LY' = 
+			VAR y = MAX ( 'Date'[iso_year] )
+			VAR w = MAX ( 'Date'[iso_week] )
+			RETURN
+				CALCULATE ( [Orders], REMOVEFILTERS ( 'Date' ), 'Date'[iso_year] = y - 1, 'Date'[iso_week] = w )
+		formatString: #,0
+		displayFolder: Week comparisons
+
+	/// Avg Ticket in the week before.
+	measure 'Avg Ticket LW' = DIVIDE ( [Net Sales LW], [Orders LW] )
+		formatString: #,0
+		displayFolder: Week comparisons
+
+	/// Change in Orders vs last week.
+	measure 'Orders WoW %' = DIVIDE ( [Orders] - [Orders LW], [Orders LW] )
+		formatString: 0.0%
+		displayFolder: Week comparisons
+
+	/// Change in Orders vs the same week last year.
+	measure 'Orders YoY %' = DIVIDE ( [Orders] - [Orders LY], [Orders LY] )
+		formatString: 0.0%
+		displayFolder: Week comparisons
+
+	column date
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		summarizeBy: none
+		isHidden
+		sourceColumn: date
+
+	column store_id
+		dataType: string
+		summarizeBy: none
+		isHidden
+		sourceColumn: store_id
+
+	column channel
+		dataType: string
+		summarizeBy: none
+		isHidden
+		sourceColumn: channel
+
+	column order_count
+		dataType: int64
+		formatString: #,0
+		summarizeBy: none
+		isHidden
+		sourceColumn: orders
+
+	column items
+		dataType: int64
+		formatString: #,0
+		summarizeBy: none
+		isHidden
+		sourceColumn: items
+
+	partition Orders = m
+		mode: import
+		source =
+				let
+					Source = Parquet.Document(Binary.Buffer(Web.Contents(DataUrl & "fact_orders.parquet"))),
+					Selected = Table.SelectColumns(Source, {"date","store_id","channel","orders","items"}),
+					Typed = Table.TransformColumnTypes(Selected, {{"date", type date}})
+				in
+					Typed
