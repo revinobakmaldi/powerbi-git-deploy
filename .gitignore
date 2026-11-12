@@ -1,0 +1,16 @@
+# build output
+build/
+tools/*/bin/
+tools/*/obj/
+__pycache__/
+*.pyc
+.DS_Store
+
+# Power BI Desktop files that must stay out of Git
+*.pbix
+**/.pbi/localSettings.json
+**/.pbi/cache.abf
+
+# local secrets
+.env
+*.env

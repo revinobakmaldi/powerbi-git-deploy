@@ -1,0 +1,123 @@
+[
+  {
+    "id": "E1",
+    "kind": "new_stores",
+    "start": "2025-05-05",
+    "region": "Jawa Timur",
+    "stores": [
+      [
+        "Citraland",
+        "Surabaya",
+        "Mall"
+      ],
+      [
+        "Rungkut",
+        "Surabaya",
+        "Street"
+      ],
+      [
+        "Sidoarjo Kota",
+        "Sidoarjo",
+        "Street"
+      ],
+      [
+        "Soekarno Hatta",
+        "Malang",
+        "Street"
+      ]
+    ],
+    "name": "Four new stores in Jawa Timur",
+    "description": "Four stores open in Surabaya, Sidoarjo and Malang."
+  },
+  {
+    "id": "E2",
+    "kind": "price",
+    "start": "2025-09-01",
+    "categories": [
+      "Non-coffee"
+    ],
+    "price_mult": 1.12,
+    "qty_mult": 0.94,
+    "name": "Non-coffee price rise",
+    "description": "Non-coffee drinks up 12%; their volume drops 6%."
+  },
+  {
+    "id": "E3",
+    "kind": "mult",
+    "start": "2026-01-12",
+    "end": "2026-01-25",
+    "channels": [
+      "Delivery app"
+    ],
+    "qty_mult": 1.45,
+    "discount": 0.15,
+    "name": "Delivery app promotion",
+    "description": "15% extra off on the delivery app for two weeks lifts delivery volume 45%."
+  },
+  {
+    "id": "E4",
+    "kind": "closed",
+    "start": "2026-07-06",
+    "end": "2026-08-02",
+    "stores": [
+      "Kemang"
+    ],
+    "name": "Kemang store renovation",
+    "description": "The Kemang store closes for four weeks."
+  },
+  {
+    "id": "E5",
+    "kind": "stockout",
+    "start": "2026-09-07",
+    "end": "2026-09-20",
+    "products": [
+      "Iced Oat Latte"
+    ],
+    "name": "Oat milk stock-out",
+    "description": "No oat milk for two weeks: Iced Oat Latte is off the menu."
+  },
+  {
+    "id": "E6",
+    "kind": "mult",
+    "start": "2026-09-28",
+    "end": null,
+    "regions": [
+      "Bandung"
+    ],
+    "stores": [
+      "Dago",
+      "Riau"
+    ],
+    "qty_mult": 0.85,
+    "name": "Competitor opens in Bandung",
+    "description": "A competitor opens next to the Dago and Riau stores; they lose 15% of volume."
+  },
+  {
+    "id": "E7",
+    "kind": "mult",
+    "start": "2026-10-12",
+    "end": "2026-10-25",
+    "regions": [
+      "Jabodetabek"
+    ],
+    "products": [
+      "Iced Palm Sugar Latte"
+    ],
+    "qty_mult": 1.7,
+    "discount": 0.2,
+    "name": "Palm Sugar Latte promotion in Jabodetabek",
+    "description": "20% off Iced Palm Sugar Latte in Jabodetabek for two weeks lifts its volume 70%."
+  },
+  {
+    "id": "E8",
+    "kind": "mult",
+    "start": "2026-10-26",
+    "end": "2026-11-01",
+    "regions": [
+      "Sumatera Utara"
+    ],
+    "qty_mult": 0.55,
+    "name": "Floods in Medan",
+    "description": "Floods cut Medan store sales by 45% for a week."
+  }
+]

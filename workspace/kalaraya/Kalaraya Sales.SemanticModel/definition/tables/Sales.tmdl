@@ -1,0 +1,141 @@
+table Sales
+
+	/// Sales after discounts, in rupiah.
+	measure 'Net Sales' = SUM ( Sales[net_amount] )
+		formatString: #,0
+		displayFolder: Sales
+
+	/// Sales before discounts, in rupiah.
+	measure 'Gross Sales' = SUM ( Sales[gross_amount] )
+		formatString: #,0
+		displayFolder: Sales
+
+	/// Discounts given, in rupiah.
+	measure 'Discount' = SUM ( Sales[discount_amount] )
+		formatString: #,0
+		displayFolder: Sales
+
+	/// Number of items sold.
+	measure 'Items Sold' = SUM ( Sales[qty] )
+		formatString: #,0
+		displayFolder: Sales
+
+	/// Net Sales in the week before the latest selected week.
+	measure 'Net Sales LW' = 
+			VAR wk = MAX ( 'Date'[week_start] )
+			RETURN
+				CALCULATE ( [Net Sales], REMOVEFILTERS ( 'Date' ), 'Date'[week_start] = wk - 7 )
+		formatString: #,0
+		displayFolder: Week comparisons
+
+	/// Net Sales in the same ISO week last year.
+	measure 'Net Sales LY' = 
+			VAR y = MAX ( 'Date'[iso_year] )
+			VAR w = MAX ( 'Date'[iso_week] )
+			RETURN
+				CALCULATE ( [Net Sales], REMOVEFILTERS ( 'Date' ), 'Date'[iso_year] = y - 1, 'Date'[iso_week] = w )
+		formatString: #,0
+		displayFolder: Week comparisons
+
+	/// Change in Net Sales vs last week, in rupiah.
+	measure 'Net Sales WoW' = [Net Sales] - [Net Sales LW]
+		formatString: #,0
+		displayFolder: Week comparisons
+
+	/// Change in Net Sales vs the same week last year, in rupiah.
+	measure 'Net Sales YoY' = [Net Sales] - [Net Sales LY]
+		formatString: #,0
+		displayFolder: Week comparisons
+
+	/// Change in Net Sales vs last week, as a share of last week.
+	measure 'Net Sales WoW %' = DIVIDE ( [Net Sales WoW], [Net Sales LW] )
+		formatString: 0.0%
+		displayFolder: Week comparisons
+
+	/// Change in Net Sales vs the same week last year, as a share of last year.
+	measure 'Net Sales YoY %' = DIVIDE ( [Net Sales YoY], [Net Sales LY] )
+		formatString: 0.0%
+		displayFolder: Week comparisons
+
+	/// Items sold in the week before.
+	measure 'Items Sold LW' = 
+			VAR wk = MAX ( 'Date'[week_start] )
+			RETURN
+				CALCULATE ( [Items Sold], REMOVEFILTERS ( 'Date' ), 'Date'[week_start] = wk - 7 )
+		formatString: #,0
+		displayFolder: Week comparisons
+
+	/// Share of Net Sales through the delivery app.
+	measure 'Delivery Share' = DIVIDE ( CALCULATE ( [Net Sales], KEEPFILTERS ( Channel[channel] = "Delivery app" ) ), [Net Sales] )
+		formatString: 0.0%
+		displayFolder: Sales
+
+	column date
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		summarizeBy: none
+		isHidden
+		sourceColumn: date
+
+	column store_id
+		dataType: string
+		summarizeBy: none
+		isHidden
+		sourceColumn: store_id
+
+	column product_id
+		dataType: string
+		summarizeBy: none
+		isHidden
+		sourceColumn: product_id
+
+	column channel
+		dataType: string
+		summarizeBy: none
+		isHidden
+		sourceColumn: channel
+
+	column qty
+		dataType: int64
+		formatString: #,0
+		summarizeBy: none
+		isHidden
+		sourceColumn: qty
+
+	column unit_price
+		dataType: int64
+		formatString: #,0
+		summarizeBy: none
+		isHidden
+		sourceColumn: unit_price
+
+	column gross_amount
+		dataType: int64
+		formatString: #,0
+		summarizeBy: none
+		isHidden
+		sourceColumn: gross_amount
+
+	column discount_amount
+		dataType: int64
+		formatString: #,0
+		summarizeBy: none
+		isHidden
+		sourceColumn: discount_amount
+
+	column net_amount
+		dataType: int64
+		formatString: #,0
+		summarizeBy: none
+		isHidden
+		sourceColumn: net_amount
+
+	partition Sales = m
+		mode: import
+		source =
+				let
+					Source = Parquet.Document(Binary.Buffer(Web.Contents(DataUrl & "fact_sales.parquet"))),
+					Selected = Table.SelectColumns(Source, {"date","store_id","product_id","channel","qty","unit_price","gross_amount","discount_amount","net_amount"}),
+					Typed = Table.TransformColumnTypes(Selected, {{"date", type date}})
+				in
+					Typed

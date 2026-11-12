@@ -1,0 +1,56 @@
+# After a merge: update the branch's Fabric workspace from Git, apply config, refresh, smoke test.
+# dev -> "Kalaraya Dev". main -> "Kalaraya Prod", which waits for approval (environment "production").
+# Signs in as a service principal with a federated credential: no secret is stored in GitHub.
+# Switch it off with the repo variable RELEASE_ENABLED=false (for example after the Fabric trial ends).
+name: Release
+
+on:
+  push:
+    branches: [dev, main]
+    paths: ["workspace/**", "config/**", "data/**"]
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Release even if nothing in scope changed
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: release-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Release ${{ github.ref_name }}
+    if: vars.RELEASE_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    environment: ${{ github.ref_name == 'main' && 'production' || 'development' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install pyarrow==21.0.0
+
+      - name: Sign in as the service principal (federated, no secret)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
+
+      - name: Update workspace from Git, apply config, refresh, smoke test
+        env:
+          FABRIC_GIT_CONNECTION_ID: ${{ vars.FABRIC_GIT_CONNECTION_ID }}
+        run: |
+          python scripts/release.py --branch "${{ github.ref_name }}" \
+            ${{ github.event_name == 'push' && format('--since {0}', github.event.before) || '' }} \
+            ${{ inputs.force && '--force' || '' }}

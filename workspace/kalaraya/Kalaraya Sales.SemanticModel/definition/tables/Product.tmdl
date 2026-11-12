@@ -1,0 +1,36 @@
+table Product
+
+	column product_id
+		dataType: string
+		summarizeBy: none
+		sourceColumn: product_id
+
+	column product_name
+		dataType: string
+		summarizeBy: none
+		sourceColumn: product_name
+
+	column category
+		dataType: string
+		summarizeBy: none
+		sourceColumn: category
+
+	column temperature
+		dataType: string
+		summarizeBy: none
+		sourceColumn: temperature
+
+	column list_price_2024
+		dataType: int64
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: list_price_2024
+
+	partition Product = m
+		mode: import
+		source =
+				let
+					Source = Parquet.Document(Binary.Buffer(Web.Contents(DataUrl & "dim_product.parquet"))),
+					Selected = Table.SelectColumns(Source, {"product_id","product_name","category","temperature","list_price_2024"})
+				in
+					Selected

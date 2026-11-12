@@ -1,0 +1,9 @@
+{
+  "_doc": "Data source settings applied after each sync, per semantic model. The model reads public Parquet files over HTTPS, so the credential is Anonymous. data_url must match the DataUrl expression in the model (a team rule checks this).",
+  "models": {
+    "Kalaraya Sales": {
+      "data_url": "https://raw.githubusercontent.com/revinobakmaldi/powerbi-git-deploy/main/data/",
+      "credential": {"type": "Anonymous", "privacy_level": "Public"}
+    }
+  }
+}

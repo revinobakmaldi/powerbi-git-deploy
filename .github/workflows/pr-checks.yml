@@ -1,0 +1,119 @@
+# Checks every pull request into dev or main. Reads files only: no Power BI licence, no secrets.
+name: PR checks
+
+on:
+  pull_request:
+    branches: [dev, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: pr-checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  files:
+    name: Files and model
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Folder structure
+        run: python scripts/check_repo.py structure
+
+      - name: JSON files parse
+        if: success() || failure()
+        run: python scripts/check_repo.py json
+
+      - name: Item names and logicalIds
+        if: success() || failure()
+        run: python scripts/check_repo.py names
+
+      - name: Config covers every workspace and model
+        if: success() || failure()
+        run: python scripts/check_repo.py config
+
+      - name: Read TMDL with Microsoft's serializer
+        id: tmdl
+        if: success() || failure()
+        run: python scripts/build_models.py --out build/head
+
+      - name: Team rules
+        if: (success() || failure()) && steps.tmdl.outcome == 'success'
+        run: python scripts/team_rules.py build/head/*.bim
+
+      - name: Keep model.bim for the analyzer
+        if: (success() || failure()) && steps.tmdl.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: model-bim
+          path: build/head/*.bim
+
+      - name: Read the target branch's model
+        if: (success() || failure()) && steps.tmdl.outcome == 'success' && github.event_name == 'pull_request'
+        run: |
+          git fetch --depth=1 origin "${{ github.base_ref }}"
+          git worktree add build/base-src FETCH_HEAD
+          python scripts/build_models.py --root build/base-src --out build/base || true
+
+      - name: Comment what changed in the model
+        if: (success() || failure()) && steps.tmdl.outcome == 'success' && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const { execSync } = require('child_process');
+            let body = '<!-- model-diff -->\n';
+            for (const f of fs.readdirSync('build/head').filter(f => f.endsWith('.bim'))) {
+              body += execSync(`python scripts/model_diff.py "build/base/${f}" "build/head/${f}"`).toString() + '\n\n';
+            }
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number });
+            const old = comments.find(c => c.body.startsWith('<!-- model-diff -->'));
+            if (old) await github.rest.issues.updateComment({ owner, repo, comment_id: old.id, body });
+            else await github.rest.issues.createComment({ owner, repo, issue_number, body });
+
+  bpa:
+    name: Best Practice Analyzer
+    needs: files
+    runs-on: windows-latest
+    env:
+      TE2_VERSION: "2.29.0"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: model-bim
+          path: build/head
+
+      - name: Download Tabular Editor 2 (pinned)
+        shell: pwsh
+        run: |
+          $url = "https://github.com/TabularEditor/TabularEditor/releases/download/$env:TE2_VERSION/TabularEditor.Portable.zip"
+          Invoke-WebRequest $url -OutFile te2.zip
+          Expand-Archive te2.zip -DestinationPath te2
+
+      - name: Run the rules in config/bpa-rules.json (severity 3 fails)
+        shell: pwsh
+        run: |
+          $failed = $false
+          foreach ($bim in Get-ChildItem build/head/*.bim) {
+            Write-Host "== $($bim.Name)"
+            $p = Start-Process -FilePath te2/TabularEditor.exe -Wait -NoNewWindow -PassThru `
+                   -ArgumentList "`"$($bim.FullName)`"", "-A", "`"$PWD/config/bpa-rules.json`"", "-G"
+            if ($p.ExitCode -ne 0) { $failed = $true }
+          }
+          if ($failed) { exit 1 }

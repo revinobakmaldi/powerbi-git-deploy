@@ -1,0 +1,7 @@
+{
+  "_doc": "One entry per Fabric workspace. Each workspace is connected (Fabric Git integration) to one branch and one folder of this repo. The release job and the checks read this file; Fabric's own Git connection does not.",
+  "workspaces": [
+    {"name": "Kalaraya Dev", "branch": "dev", "folder": "workspace/kalaraya", "approval": false},
+    {"name": "Kalaraya Prod", "branch": "main", "folder": "workspace/kalaraya", "approval": true}
+  ]
+}

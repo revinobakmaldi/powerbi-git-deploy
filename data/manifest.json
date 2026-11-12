@@ -1,0 +1,30 @@
+{
+  "company": "PT Kalaraya Seduh Indonesia",
+  "brand": "Kalaraya Coffee",
+  "seed": 20261108,
+  "start": "2024-01-01",
+  "end": "2026-11-01",
+  "events": true,
+  "tables": {
+    "fact_sales": {
+      "rows": 1577440,
+      "sha256": "53a773665390025f78cab808b7f39352cac9234ae097fa71954fd397c6e01909"
+    },
+    "fact_orders": {
+      "rows": 91076,
+      "sha256": "991a629e0458da7692a3780fa302414c80a71196a8f4c2c1371bac7b0ec2130f"
+    },
+    "dim_store": {
+      "rows": 46,
+      "sha256": "510b8895516b46bfd4d6399f66f4058775282b11e3590f24b8e5412d29ebec90"
+    },
+    "dim_product": {
+      "rows": 19,
+      "sha256": "a78ea718c7cb11f32db8756944d13c8d1a0eb1559611acdc897c04852208a8d7"
+    },
+    "dim_date": {
+      "rows": 1036,
+      "sha256": "8beb834c7e4f9530adb17d769ebc335be3436803d7a02b87069bfb6154c0d5a8"
+    }
+  }
+}
