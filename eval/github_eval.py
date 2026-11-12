@@ -86,7 +86,7 @@ def main():
         branch = f"eval/{name}-{stamp}"
         sh(["git", "checkout", "-q", "-B", branch, f"origin/{a.base}"], cwd=src)
         change(src)
-        sh(["git", "add", "-A"], cwd=src)
+        sh(["git", "add", "-A", "--force"], cwd=src)  # --force: the .pbix case plants a file .gitignore would skip
         sh(["git", "commit", "-q", "--allow-empty", "-m", f"[eval] planted: {what}"], cwd=src)
         sha = sh(["git", "rev-parse", "HEAD"], cwd=src)
         sh(["git", "push", "-q", "origin", branch], cwd=src)
