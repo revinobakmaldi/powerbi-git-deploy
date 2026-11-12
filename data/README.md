@@ -4,7 +4,7 @@
 
 It is a coffee-shop chain with 46 stores in 6 regions of Indonesia. It sells drinks, food, beans and merchandise in its stores and through a delivery app. Prices are per item, in rupiah.
 
-Regenerate with `python3 generator/generate.py` (seed `20261108`; same seed and end date give the same files). Check it with `python3 eval/check_dataset.py`.
+The files are copied from [Build 1](https://github.com/revinobakmaldi/weekly-sales-commentary-agent), where the generator and its checks live (seed `20261108`; same seed and end date give the same files). `manifest.json` has the row count and SHA-256 of each file.
 
 ## Tables
 
@@ -27,7 +27,7 @@ Data runs from 1 Jan 2024 to 1 Nov 2026 (ISO week 2026-W44).
 - **Rainy season (November to March):** fewer iced drinks, more hot drinks and more delivery.
 - **Ramadan and Lebaran:** in-store sales fall during Ramadan while delivery rises. Stores close on the first day of Idul Fitri. During the Lebaran holiday Jabodetabek sales drop by about half and other regions rise. Holiday dates follow the SKB 3 Menteri for 2024–2026.
 - **December:** malls busier before Christmas; office stores quiet in the last week.
-- **Planted events (E1–E8):** new stores, a price rise, a delivery-app promotion, a store renovation, a stock-out, a new competitor, a product promotion and floods. `events.json` lists them, so the agent's findings can be checked against the truth.
+- **Planted events (E1–E8):** new stores, a price rise, a delivery-app promotion, a store renovation, a stock-out, a new competitor, a product promotion and floods. `events.json` lists them (used by Build 1 to check its AI commentary; this repo doesn't need it).
 
 ## Not modelled
 - Individual receipts, refunds and staff meals.
