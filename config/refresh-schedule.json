@@ -1,6 +1,6 @@
 {
   "_doc": "Scheduled refresh per workspace and semantic model. The release job applies it after each sync; the daily reconcile job puts it back if the service turned it off (it does after 4 failed refreshes).",
-  "defaults": {"enabled": true, "days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], "times": ["06:00"], "localTimeZoneId": "SE Asia Standard Time", "notifyOption": "NoNotification"},
+  "defaults": {"enabled": true, "days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], "times": ["06:00"],, "localTimeZoneId": "SE Asia Standard Time", "notifyOption": "NoNotification"},
   "schedules": {
     "Kalaraya Dev": {"Kalaraya Sales": {"enabled": false}},
     "Kalaraya Prod": {"Kalaraya Sales": {}}
