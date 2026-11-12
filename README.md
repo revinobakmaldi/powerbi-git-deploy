@@ -38,7 +38,24 @@ The analyzer and the TMDL reader overlap on purpose. A measure that points at a 
 
 ## Results
 
-<!-- RESULTS -->
+Every check is tested by planting one bug at a time. Each must fail its own check and nothing else; a check that fails too often is as wrong as one that never fails.
+
+| Planted change | Fails | Local eval | On GitHub |
+|---|---|---|---|
+| None (clean copy) | nothing | ✅ | ✅ [#3](https://github.com/revinobakmaldi/powerbi-git-deploy/pull/3) |
+| A typo in a TMDL property | Read TMDL | ✅ | ✅ [#4](https://github.com/revinobakmaldi/powerbi-git-deploy/pull/4) |
+| A relationship to a column that doesn't exist | Read TMDL | ✅ | ✅ [#5](https://github.com/revinobakmaldi/powerbi-git-deploy/pull/5) |
+| A measure without a description | Team rules | ✅ | ✅ [#6](https://github.com/revinobakmaldi/powerbi-git-deploy/pull/6) |
+| A measure pointing at a renamed column | Team rules | ✅ | ✅ [#7](https://github.com/revinobakmaldi/powerbi-git-deploy/pull/7) |
+| The model reading another branch's data | Team rules | ✅ | ✅ [#8](https://github.com/revinobakmaldi/powerbi-git-deploy/pull/8) |
+| A folder renamed without its `.platform` | Item names | ✅ | ✅ [#9](https://github.com/revinobakmaldi/powerbi-git-deploy/pull/9) |
+| A copied model that kept its logicalId | Item names, config | ✅ | ✅ [#10](https://github.com/revinobakmaldi/powerbi-git-deploy/pull/10) |
+| A broken config file | JSON | ✅ | ✅ [#11](https://github.com/revinobakmaldi/powerbi-git-deploy/pull/11) |
+| A `.pbix` committed | Structure | ✅ | ✅ [#12](https://github.com/revinobakmaldi/powerbi-git-deploy/pull/12) |
+| A visible numeric column that sums by default | Best Practice Analyzer only | ✅ (not run locally) | ✅ [#13](https://github.com/revinobakmaldi/powerbi-git-deploy/pull/13) |
+| A correct DAX change | nothing; the PR comment shows the before and after | ✅ | ✅ [#14](https://github.com/revinobakmaldi/powerbi-git-deploy/pull/14) |
+
+Run them: `python3 eval/run_eval.py` (local, about 2.5 minutes) and `python3 eval/github_eval.py` (real pull requests, about 35 minutes). Results: [eval/results/](eval/results/).
 
 ## Use it for your team
 
