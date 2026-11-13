@@ -16,7 +16,7 @@ table Sales
 		displayFolder: Sales
 
 	/// Number of items sold.
-	measure 'Items Sold' = SUM ( Sales[qty] )
+	measure 'Items Sold' = SUMX ( Sales, Sales[qty] )
 		formatString: #,0
 		displayFolder: Sales
 
