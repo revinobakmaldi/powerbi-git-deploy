@@ -27,6 +27,7 @@ After each merge, GitHub Actions (service principal, no stored secret):
 | Check | What it stops | Tool |
 |---|---|---|
 | Folder structure | An item folder missing the files Fabric needs; a `.pbix` committed | `scripts/check_repo.py structure` |
+| Python scripts lint | A bug in the release scripts that would only show up at release time | [pyflakes](https://pypi.org/project/pyflakes/) |
 | JSON files parse | One broken JSON file that breaks the sync | `scripts/check_repo.py json` |
 | Item names and logicalIds | A folder renamed without its `.platform`: Fabric names the item from `.platform`, so it syncs under the old name, with no error. A copied item that kept its logicalId. | `scripts/check_repo.py names` |
 | Config coverage | A workspace folder no workspace syncs; a model with no data source settings | `scripts/check_repo.py config` |
@@ -42,20 +43,33 @@ Every check is tested by planting one bug at a time. Each must fail its own chec
 
 | Planted change | Fails | Local eval | On GitHub |
 |---|---|---|---|
-| None (clean copy) | nothing | ✅ | ✅ [#3](https://github.com/revinobakmaldi/powerbi-git-deploy/pull/3) |
-| A typo in a TMDL property | Read TMDL | ✅ | ✅ [#4](https://github.com/revinobakmaldi/powerbi-git-deploy/pull/4) |
-| A relationship to a column that doesn't exist | Read TMDL | ✅ | ✅ [#5](https://github.com/revinobakmaldi/powerbi-git-deploy/pull/5) |
-| A measure without a description | Team rules | ✅ | ✅ [#6](https://github.com/revinobakmaldi/powerbi-git-deploy/pull/6) |
-| A measure pointing at a renamed column | Team rules | ✅ | ✅ [#7](https://github.com/revinobakmaldi/powerbi-git-deploy/pull/7) |
-| The model reading another branch's data | Team rules | ✅ | ✅ [#8](https://github.com/revinobakmaldi/powerbi-git-deploy/pull/8) |
-| A folder renamed without its `.platform` | Item names | ✅ | ✅ [#9](https://github.com/revinobakmaldi/powerbi-git-deploy/pull/9) |
-| A copied model that kept its logicalId | Item names, config | ✅ | ✅ [#10](https://github.com/revinobakmaldi/powerbi-git-deploy/pull/10) |
-| A broken config file | JSON | ✅ | ✅ [#11](https://github.com/revinobakmaldi/powerbi-git-deploy/pull/11) |
-| A `.pbix` committed | Structure | ✅ | ✅ [#12](https://github.com/revinobakmaldi/powerbi-git-deploy/pull/12) |
-| A visible numeric column that sums by default | Best Practice Analyzer only | ✅ (not run locally) | ✅ [#13](https://github.com/revinobakmaldi/powerbi-git-deploy/pull/13) |
-| A correct DAX change | nothing; the PR comment shows the before and after | ✅ | ✅ [#14](https://github.com/revinobakmaldi/powerbi-git-deploy/pull/14) |
+| None (clean copy) | nothing | ✅ | ✅ [#17](https://github.com/revinobakmaldi/powerbi-git-deploy/pull/17) |
+| A typo in a TMDL property | Read TMDL | ✅ | ✅ [#19](https://github.com/revinobakmaldi/powerbi-git-deploy/pull/19) |
+| A relationship to a column that doesn't exist | Read TMDL | ✅ | ✅ [#20](https://github.com/revinobakmaldi/powerbi-git-deploy/pull/20) |
+| A measure without a description | Team rules | ✅ | ✅ [#22](https://github.com/revinobakmaldi/powerbi-git-deploy/pull/22) |
+| A measure pointing at a renamed column | Team rules | ✅ | ✅ [#23](https://github.com/revinobakmaldi/powerbi-git-deploy/pull/23) |
+| The model reading another branch's data | Team rules | ✅ | ✅ [#24](https://github.com/revinobakmaldi/powerbi-git-deploy/pull/24) |
+| A folder renamed without its `.platform` | Item names | ✅ | ✅ [#25](https://github.com/revinobakmaldi/powerbi-git-deploy/pull/25) |
+| A copied model that kept its logicalId | Item names, config | ✅ | ✅ [#26](https://github.com/revinobakmaldi/powerbi-git-deploy/pull/26) |
+| A broken config file | JSON | ✅ | ✅ [#27](https://github.com/revinobakmaldi/powerbi-git-deploy/pull/27) |
+| A `.pbix` committed | Structure | ✅ | ✅ [#28](https://github.com/revinobakmaldi/powerbi-git-deploy/pull/28) |
+| A release-script variable hiding a function (the bug the first real release hit) | Python scripts lint | ✅ | ✅ [#29](https://github.com/revinobakmaldi/powerbi-git-deploy/pull/29) |
+| A visible numeric column that sums by default | Best Practice Analyzer only | ✅ (not run locally) | ✅ [#30](https://github.com/revinobakmaldi/powerbi-git-deploy/pull/30) |
+| A correct DAX change | nothing; the PR comment shows the before and after | ✅ | ✅ [#31](https://github.com/revinobakmaldi/powerbi-git-deploy/pull/31) |
 
-Run them: `python3 eval/run_eval.py` (local, about 2.5 minutes) and `python3 eval/github_eval.py` (real pull requests, about 35 minutes). Results: [eval/results/](eval/results/).
+Run them: `python3 eval/run_eval.py` (local, about 2.5 minutes) and `python3 eval/github_eval.py` (real pull requests, about 15 minutes; each planted bug sends you a "run failed" email). Results: [eval/results/](eval/results/).
+
+## Running on a Fabric trial
+
+The release path ran end to end on 13 November 2026, as a service principal with no stored secret:
+
+| What | Result |
+|---|---|
+| [Release on `dev`](https://github.com/revinobakmaldi/powerbi-git-deploy/actions/runs/43338933484) | Kalaraya Dev updated from Git, refreshed, total sales and row count equal to the data files |
+| [Release on `main`](https://github.com/revinobakmaldi/powerbi-git-deploy/actions/runs/43339438657) | Waited for approval, then the same for Kalaraya Prod, and the refresh schedule set from `config/` |
+| Reconcile, `python3 eval/reconcile_eval.py` | A schedule changed by hand in the portal: the dry run reported it, the daily job put it back and took the model back over, a last dry run matched config ([result](eval/results/reconcile-2026-11-13.md)) |
+
+The very first release failed after the Git update, on a bug in the release script. The fix added the lint check above. Screenshots: [docs/proof/](docs/proof/).
 
 ## Use it for your team
 
@@ -67,10 +81,11 @@ Run the checks locally before you push:
 
 ```bash
 python3 scripts/check_repo.py
+python3 -m pyflakes scripts eval
 python3 scripts/build_models.py && python3 scripts/team_rules.py build/head/*.bim
 ```
 
-Requirements: Python 3.9+, .NET 8 SDK (or newer), and `pip install pyarrow` for the release and smoke test.
+Requirements: Python 3.9+, .NET 8 SDK (or newer), `pip install pyflakes`, and `pip install pyarrow` for the release and smoke test.
 
 ## What you need
 
@@ -99,7 +114,7 @@ Fabric deployment pipelines also move content from Dev to Prod. Here, Git is alr
 | `tools/tmdl-check/` | A small .NET tool around Microsoft's TMDL serializer |
 | `data/` | Synthetic sales data for a fictional coffee-shop chain in Indonesia ([data/README.md](data/README.md)) |
 | `eval/` | The evals and their results |
-| `docs/` | Setup, life after the trial, screenshots |
+| `docs/` | Setup, life after the trial, [proof screenshots](docs/proof/) |
 
 ## The data is synthetic
 
