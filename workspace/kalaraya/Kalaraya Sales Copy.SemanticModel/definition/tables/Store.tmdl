@@ -1,0 +1,42 @@
+table Store
+
+	column store_id
+		dataType: string
+		summarizeBy: none
+		sourceColumn: store_id
+
+	column store_name
+		dataType: string
+		summarizeBy: none
+		sourceColumn: store_name
+
+	column city
+		dataType: string
+		summarizeBy: none
+		sourceColumn: city
+
+	column region
+		dataType: string
+		summarizeBy: none
+		sourceColumn: region
+
+	column format
+		dataType: string
+		summarizeBy: none
+		sourceColumn: format
+
+	column open_date
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		summarizeBy: none
+		sourceColumn: open_date
+
+	partition Store = m
+		mode: import
+		source =
+				let
+					Source = Parquet.Document(Binary.Buffer(Web.Contents(DataUrl & "dim_store.parquet"))),
+					Selected = Table.SelectColumns(Source, {"store_id","store_name","city","region","format","open_date"}),
+					Typed = Table.TransformColumnTypes(Selected, {{"open_date", type date}})
+				in
+					Typed

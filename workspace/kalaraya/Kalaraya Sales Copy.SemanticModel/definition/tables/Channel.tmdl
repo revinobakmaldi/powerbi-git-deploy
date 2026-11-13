@@ -1,0 +1,14 @@
+table Channel
+
+	column channel
+		dataType: string
+		summarizeBy: none
+		sourceColumn: channel
+
+	partition Channel = m
+		mode: import
+		source =
+				let
+					Source = #table(type table [channel = text], {{"In-store"}, {"Delivery app"}})
+				in
+					Source
