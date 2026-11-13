@@ -3,7 +3,9 @@
 Run:  python3 scripts/reconcile.py [--dry-run] [--auth azcli|fab]
 
 The service turns a schedule off after 4 failed refreshes, and anyone with access can change it in
-the portal. This job runs daily, compares the service with the config file and fixes any drift.
+the portal (taking the model over first, which makes them its owner). This job runs daily, compares
+the service with the config file and fixes any drift: it takes the model back over, sets the data
+source credentials again (a takeover drops them) and writes the schedule.
 With --dry-run it only reports. It needs no repo change to run.
 """
 import argparse
@@ -13,7 +15,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from fabric_client import ApiError, Client  # noqa: E402
-from release import apply_schedule, cfg, model_ids, models_in, wanted_schedule  # noqa: E402
+from release import apply_schedule, cfg, model_ids, models_in, set_credentials, take_over, wanted_schedule  # noqa: E402
 
 
 def main():
@@ -32,7 +34,11 @@ def main():
                 if want is None or model not in ids:
                     rows.append((ws["name"], model, "not managed" if want is None else "model not in workspace"))
                     continue
-                diff = apply_schedule(c, ws_id, ids[model], want, dry_run=a.dry_run)
+                diff = apply_schedule(c, ws_id, ids[model], want, dry_run=True)
+                if diff and not a.dry_run:
+                    take_over(c, ws_id, ids[model])
+                    set_credentials(c, ws_id, ids[model], model)
+                    apply_schedule(c, ws_id, ids[model], want)
                 verb = "would fix" if a.dry_run else "fixed"
                 rows.append((ws["name"], model, f"{verb}: {', '.join(diff)}" if diff else "matches config"))
         except (ApiError, RuntimeError) as e:
