@@ -32,6 +32,10 @@ jobs:
       - name: Folder structure
         run: python scripts/check_repo.py structure
 
+      - name: Python scripts lint
+        if: success() || failure()
+        run: pip install --quiet pyflakes==3.4.0 && python -m pyflakes scripts eval
+
       - name: JSON files parse
         if: success() || failure()
         run: python scripts/check_repo.py json

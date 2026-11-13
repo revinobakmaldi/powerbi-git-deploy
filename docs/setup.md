@@ -30,8 +30,10 @@ Turn on, for your account or a security group that holds the service principal:
 | Setting | Section | Why |
 |---|---|---|
 | Users can synchronize workspace items with their Git repositories | Git integration | Fabric Git sync |
-| Users can synchronize workspace items with GitHub repositories | Git integration | GitHub as the Git provider |
-| Service principals can use Fabric APIs | Developer settings | The release job calls the Fabric and Power BI APIs |
+| Users can sync workspace items with GitHub repositories | Git integration | GitHub as the Git provider |
+| Service principals can call Fabric public APIs | Developer settings | The release job calls the Fabric and Power BI APIs |
+
+Microsoft renames these settings from time to time; search the page for "GitHub" and "Service principals".
 
 ## 4. A GitHub token for Fabric
 
@@ -55,7 +57,19 @@ The "Add account" step creates a Fabric connection that stores the token. You re
 
 ## 6. A service principal, with no secret
 
-Microsoft Entra admin center → App registrations → New registration (e.g. `powerbi-git-deploy-release`). No redirect URI. Then **Certificates & secrets → Federated credentials → Add**, scenario *GitHub Actions deploying Azure resources*, three times:
+Microsoft Entra admin center → App registrations → New registration (e.g. `powerbi-git-deploy-release`). No redirect URI. Then **Certificates & secrets → Federated credentials → Add**, scenario *GitHub Actions deploying Azure resources*, three times.
+
+The form asks for the organization **and its ID**, the repository **and its ID**. GitHub now signs runs with these numbers in the subject (`repo:<owner>@<owner id>/<repo>@<repo id>:...`), so a renamed or re-created repo can't reuse your trust. Get the numbers, and check which format your repo uses:
+
+```bash
+gh api users/<owner> -q .id
+gh api repos/<owner>/<repo> -q .id
+gh api repos/<owner>/<repo>/actions/oidc/customization/sub   # "use_immutable_subject": true
+```
+
+If it says `false` (repos created before mid-2026), either opt the repo in to the immutable format ([Microsoft Learn](https://learn.microsoft.com/entra/workload-id/workload-identities-github-immutable-subjects)), or click **Edit** next to *Subject identifier* and type the older form, e.g. `repo:<owner>/<repo>:environment:development`.
+
+The three credentials:
 
 | Entity type | Value | Used by |
 |---|---|---|
@@ -85,12 +99,14 @@ A service principal can't use "Automatic" Git credentials, so the release job po
 | `FABRIC_GIT_CONNECTION_ID` | the connection ID from step 7 |
 | `RELEASE_ENABLED` | `true` |
 
-**Settings → Environments**: create `development` (no rules) and `production` with **Required reviewers** = the model owner. The release to Prod waits there.
+**Settings → Environments**: create `development` (no reviewers) and `production` with **Required reviewers** = the model owner. The release to Prod waits there. Under *Deployment branches → Selected branches*, limit `development` to `dev` and `production` to `main`, so a run from another branch can't get the credential.
 
 **Settings → Rules → Rulesets** (or Branches → branch protection) for `dev` and `main`:
 - Require a pull request, with 1 approval and review from Code Owners on `main`
 - Require status checks: **Files and model** and **Best Practice Analyzer**
-- Block force pushes
+- Block force pushes and deletion
+
+Working alone? GitHub doesn't let you approve your own pull request. Add the **Repository admin** role as a bypass actor, *for pull requests only*: you can then merge your own PR after reading it, and nobody can push straight to `dev` or `main`. This repo is set up that way.
 
 ## 9. First release
 

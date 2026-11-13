@@ -15,7 +15,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from fabric_client import Client  # noqa: E402
-from release import ROOT, cfg, model_ids, refresh, set_credentials, smoke  # noqa: E402
+from release import ROOT, model_ids, refresh, set_credentials, smoke  # noqa: E402
 
 
 def main():
