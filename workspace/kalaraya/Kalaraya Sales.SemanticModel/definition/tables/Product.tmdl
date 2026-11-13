@@ -23,7 +23,7 @@ table Product
 	column list_price_2024
 		dataType: int64
 		formatString: #,0
-		summarizeBy: none
+		summarizeBy: sum
 		sourceColumn: list_price_2024
 
 	partition Product = m
