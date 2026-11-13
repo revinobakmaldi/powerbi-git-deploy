@@ -10,7 +10,6 @@ table Sales
 		formatString: #,0
 		displayFolder: Sales
 
-	/// Discounts given, in rupiah.
 	measure 'Discount' = SUM ( Sales[discount_amount] )
 		formatString: #,0
 		displayFolder: Sales
