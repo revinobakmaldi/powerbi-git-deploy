@@ -28,7 +28,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent.parent
 MODEL = "workspace/kalaraya/Kalaraya Sales.SemanticModel"
 DEF = MODEL + "/definition"
-CHECKS = ["structure", "json", "names", "config", "tmdl", "team_rules"]
+CHECKS = ["structure", "lint", "json", "names", "config", "tmdl", "team_rules"]
 
 
 def run(cmd, cwd):
@@ -41,6 +41,8 @@ def run_checks(repo):
     for c in ["structure", "json", "names", "config"]:
         r = run([sys.executable, "scripts/check_repo.py", c], repo)
         res[c] = (r.returncode == 0, r.stdout + r.stderr)
+    r = run([sys.executable, "-m", "pyflakes", "scripts", "eval"], repo)
+    res["lint"] = (r.returncode == 0, r.stdout + r.stderr)
     shutil.rmtree(repo / "build", ignore_errors=True)
     r = run([sys.executable, "scripts/build_models.py", "--out", "build/head"], repo)
     res["tmdl"] = (r.returncode == 0, r.stdout + r.stderr)
@@ -109,6 +111,13 @@ def bug_bpa_only(r):
     p.write_text(new)
 
 
+def bug_shadowed_name(r):
+    # the bug the first real release hit: a loop variable hiding a function of the same name
+    edit(r / "scripts/release.py", "    for src in sources:", "    for ds in sources:")
+    edit(r / "scripts/release.py", "{src['gatewayId']}/datasources/{src['datasourceId']}",
+         "{ds['gatewayId']}/datasources/{ds['datasourceId']}")
+
+
 def valid_change(r):
     edit(r / DEF / "tables/Sales.tmdl", "measure 'Items Sold' = SUM ( Sales[qty] )",
          "measure 'Items Sold' = SUMX ( Sales, Sales[qty] )")
@@ -125,6 +134,7 @@ CASES = [
     ("copied-item-same-logicalid", bug_copied_item, {"names", "config"}, "a copied model that kept the logicalId"),
     ("bad-json-config", bug_bad_json, {"json"}, "a broken config file"),
     ("pbix-committed", bug_pbix, {"structure"}, "a Desktop .pbix committed"),
+    ("python-shadowed-name", bug_shadowed_name, {"lint"}, "a script variable hiding a function: fails only at release time"),
     ("bpa-only", bug_bpa_only, set(), "a visible numeric column that sums by default: only the analyzer (GitHub) catches it"),
     ("valid-measure-change", valid_change, set(), "a correct DAX change: passes, and the diff shows it"),
 ]

@@ -26,6 +26,7 @@ import run_eval  # noqa: E402
 HERE = Path(__file__).resolve().parent.parent
 STEP = {
     "Folder structure": "structure",
+    "Python scripts lint": "lint",
     "JSON files parse": "json",
     "Item names and logicalIds": "names",
     "Config covers every workspace and model": "config",

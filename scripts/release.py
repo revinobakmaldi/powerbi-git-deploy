@@ -116,12 +116,12 @@ def take_over(c, ws_id, mid):
 def set_credentials(c, ws_id, mid, model):
     spec = cfg("datasources.json")["models"][model]["credential"]
     sources = c.get(f"{ds(ws_id, mid)}/datasources", audience="powerbi").get("value", [])
-    for ds in sources:
+    for src in sources:
         body = {"credentialDetails": {"credentialType": spec["type"],
                                       "credentials": json.dumps({"credentialData": ""}),
                                       "encryptedConnection": "Encrypted", "encryptionAlgorithm": "None",
                                       "privacyLevel": spec["privacy_level"]}}
-        c.request("patch", f"gateways/{ds['gatewayId']}/datasources/{ds['datasourceId']}", body, audience="powerbi")
+        c.request("patch", f"gateways/{src['gatewayId']}/datasources/{src['datasourceId']}", body, audience="powerbi")
     return len(sources)
 
 
