@@ -121,3 +121,7 @@ python3 scripts/deploy_my_workspace.py </dev/null
 ```
 
 It imports the model into your **My workspace** as you (`fab auth login`), refreshes it and runs the same smoke test.
+
+Already have a model with the same name there? Add `--suffix " (test)"` to import it as "Kalaraya Sales (test)" and leave the other one alone.
+
+Tested on 14 November 2026: imported into My workspace as "Kalaraya Sales (Build 2)", refresh completed, smoke test passed. The account that ran it also had a Fabric trial, but its My workspace is not on a capacity, so the trial played no part.
